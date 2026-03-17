@@ -1,1 +1,2186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AV Integration Toolbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1e2128;
+    --panel: #262b35;
+    --panel2: #2c3140;
+    --border: #3a4255;
+    --accent: #00c8ff;
+    --accent2: #ff6b2b;
+    --accent3: #00ff9d;
+    --text: #d4dff0;
+    --text-dim: #7a8aa8;
+    --text-bright: #eaf2ff;
+    --warn: #ffcc00;
+    --danger: #ff3d3d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(0,200,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(255,107,43,0.05) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(58,66,85,0.25) 39px, rgba(58,66,85,0.25) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(58,66,85,0.25) 39px, rgba(58,66,85,0.25) 40px);
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(38,43,53,0.97);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), #0066ff);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #000;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-bright);
+  }
+
+  header .subtitle {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-left: auto;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+    animation: pulse 2s infinite;
+    margin-left: 8px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 14px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-top: 1px solid transparent;
+    background: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    outline: none;
+    display: inline-block;
+  }
+
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(0,200,255,0.05);
+  }
+
+  .main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.25s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+  }
+
+  .card.orange::before { background: var(--accent2); }
+  .card.green::before { background: var(--accent3); }
+  .card.yellow::before { background: var(--warn); }
+
+  .card:hover { border-color: #3a4458; }
+
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .field-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    align-items: flex-end;
+  }
+
+  .field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    padding: 9px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    border-radius: 1px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus { border-color: var(--accent); }
+
+  select option { background: var(--panel); }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 10px 18px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: #33d4ff; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn.orange { background: var(--accent2); }
+  .btn.orange:hover { background: #ff8c52; }
+  .btn.green { background: var(--accent3); }
+  .btn.green:hover { background: #33ffb3; }
+  .btn.full { width: 100%; margin-top: 4px; }
+
+  .result {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 14px 16px;
+    margin-top: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    min-height: 50px;
+    border-radius: 1px;
+  }
+
+  .result.orange { border-left-color: var(--accent2); }
+  .result.green { border-left-color: var(--accent3); }
+  .result.yellow { border-left-color: var(--warn); }
+
+  .result-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .result-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+
+  .result-value.orange { color: var(--accent2); }
+  .result-value.green { color: var(--accent3); }
+  .result-value.yellow { color: var(--warn); }
+
+  .result-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .warn-tag {
+    display: inline-block;
+    background: rgba(255,204,0,0.1);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 1px;
+    margin-top: 6px;
+  }
+
+  .danger-tag {
+    display: inline-block;
+    background: rgba(255,61,61,0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 1px;
+    margin-top: 6px;
+  }
+
+  .ok-tag {
+    display: inline-block;
+    background: rgba(0,255,157,0.1);
+    border: 1px solid var(--accent3);
+    color: var(--accent3);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 1px;
+    margin-top: 6px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .multi-result {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .mini-result {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 1px;
+  }
+
+  .mini-result .result-label { margin-bottom: 3px; }
+  .mini-result .result-value { font-size: 16px; }
+
+  .formula-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  .tag-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: 12px;
+  }
+
+  .info-table th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(42,48,64,0.4);
+    color: var(--text);
+  }
+
+  .info-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    border-radius: 1px;
+    text-transform: uppercase;
+  }
+
+  .badge-blue { background: rgba(0,200,255,0.15); color: var(--accent); }
+  .badge-orange { background: rgba(255,107,43,0.15); color: var(--accent2); }
+  .badge-green { background: rgba(0,255,157,0.15); color: var(--accent3); }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    .tabs { padding: 0 16px; }
+    .main { padding: 20px 16px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .field-row { flex-direction: column; }
+    .multi-result { grid-template-columns: 1fr; }
+    header .subtitle { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">AV</div>
+  <h1>AV Toolbox</h1>
+  <div class="status-dot"></div>
+  <span class="subtitle">Integration Field Tools &nbsp;v2.1</span>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="showTab('power')">Power &amp; Ohms</button>
+  <button class="tab" onclick="showTab('signal')">Signal &amp; Gain</button>
+  <button class="tab" onclick="showTab('cable')">Cable &amp; Impedance</button>
+  <button class="tab" onclick="showTab('display')">Display &amp; Viewing</button>
+  <button class="tab" onclick="showTab('thermal')">Thermal / BTU</button>
+  <button class="tab" onclick="showTab('rack')">Rack Builder</button>
+  <button class="tab" onclick="showTab('wiring')">Wiring Guides</button>
+  <button class="tab" onclick="showTab('reference')">Reference</button>
+</div>
+
+<div class="main">
+
+  <!-- POWER & OHMS -->
+  <div class="section active" id="power">
+    <div class="section-title">Power &amp; Ohms Law Calculators</div>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-title">Ohm's Law</div>
+        <div class="card-desc">Enter any two values — calculates the remaining two</div>
+        <div class="field-row">
+          <div class="field"><label>Voltage (V)</label><input id="ohm-v" type="number" placeholder="Volts" oninput="calcOhm()"></div>
+          <div class="field"><label>Current (A)</label><input id="ohm-i" type="number" placeholder="Amps" oninput="calcOhm()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Resistance (Ω)</label><input id="ohm-r" type="number" placeholder="Ohms" oninput="calcOhm()"></div>
+          <div class="field"><label>Power (W)</label><input id="ohm-p" type="number" placeholder="Watts" oninput="calcOhm()"></div>
+        </div>
+        <div class="result" id="ohm-result">
+          <div class="result-label">Result</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter any two values above</div>
+        </div>
+        <div class="formula-hint">V=IR &nbsp;|&nbsp; P=VI &nbsp;|&nbsp; P=I²R &nbsp;|&nbsp; P=V²/R</div>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">Speaker Load / Parallel Impedance</div>
+        <div class="card-desc">Calculate combined impedance of parallel speaker loads</div>
+        <div class="field-row">
+          <div class="field"><label>Speaker 1 (Ω)</label><input id="sp1" type="number" placeholder="e.g. 8" oninput="calcParallel()"></div>
+          <div class="field"><label>Speaker 2 (Ω)</label><input id="sp2" type="number" placeholder="e.g. 8" oninput="calcParallel()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Speaker 3 (Ω)</label><input id="sp3" type="number" placeholder="optional" oninput="calcParallel()"></div>
+          <div class="field"><label>Speaker 4 (Ω)</label><input id="sp4" type="number" placeholder="optional" oninput="calcParallel()"></div>
+        </div>
+        <div class="result orange" id="parallel-result">
+          <div class="result-label">Combined Impedance</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter speaker values above</div>
+        </div>
+        <div class="formula-hint">1/Ztotal = 1/Z1 + 1/Z2 + ...</div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Amplifier Power &amp; SPL</div>
+        <div class="card-desc">Estimate SPL from amp power and speaker sensitivity</div>
+        <div class="field-row">
+          <div class="field"><label>Amp Power (W)</label><input id="amp-w" type="number" placeholder="e.g. 500" oninput="calcSPL()"></div>
+          <div class="field"><label>Sensitivity (dB/W/m)</label><input id="amp-sens" type="number" placeholder="e.g. 95" oninput="calcSPL()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Distance (m)</label><input id="amp-dist" type="number" placeholder="e.g. 10" oninput="calcSPL()"></div>
+        </div>
+        <div class="result green" id="spl-result">
+          <div class="result-label">Estimated SPL</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+        <div class="formula-hint">SPL = Sensitivity + 10·log₁₀(W) − 20·log₁₀(d)</div>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-title">Circuit Breaker / Load Check</div>
+        <div class="card-desc">Verify load does not exceed breaker rating (80% rule)</div>
+        <div class="field-row">
+          <div class="field"><label>Total Watts (W)</label><input id="cb-w" type="number" placeholder="e.g. 3200" oninput="calcBreaker()"></div>
+          <div class="field"><label>Voltage (V)</label>
+            <select id="cb-v" onchange="calcBreaker()">
+              <option value="120">120V (US)</option>
+              <option value="240" selected>240V (AU/UK)</option>
+              <option value="208">208V (3-phase)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Breaker Rating (A)</label><input id="cb-amp" type="number" placeholder="e.g. 20" oninput="calcBreaker()"></div>
+        </div>
+        <div class="result yellow" id="breaker-result">
+          <div class="result-label">Load Analysis</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SIGNAL & GAIN -->
+  <div class="section" id="signal">
+    <div class="section-title">Signal Level, Gain &amp; PAG/NAG</div>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-title">PAG / NAG Calculator</div>
+        <div class="card-desc">Potential Acoustic Gain &amp; Needed Acoustic Gain for mic/PA systems</div>
+        <div class="field-row">
+          <div class="field"><label>D1 — Talker to Mic (m)</label><input id="pag-d1" type="number" placeholder="e.g. 0.5" oninput="calcPAG()"></div>
+          <div class="field"><label>D2 — Mic to Speaker (m)</label><input id="pag-d2" type="number" placeholder="e.g. 6" oninput="calcPAG()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>D3 — Speaker to Listener (m)</label><input id="pag-d3" type="number" placeholder="e.g. 10" oninput="calcPAG()"></div>
+          <div class="field"><label>D4 — Talker to Listener (m)</label><input id="pag-d4" type="number" placeholder="e.g. 15" oninput="calcPAG()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>No. of Open Mics (NOM)</label><input id="pag-nom" type="number" placeholder="e.g. 1" value="1" oninput="calcPAG()"></div>
+          <div class="field"><label>EAD Advantage (0–6 dB)</label><input id="pag-ead" type="number" placeholder="e.g. 3" value="0" oninput="calcPAG()"></div>
+        </div>
+        <div class="multi-result" id="pag-result">
+          <div class="mini-result">
+            <div class="result-label">PAG</div>
+            <div class="result-value" id="pag-val">—</div>
+            <div class="result-sub">Potential Acoustic Gain</div>
+          </div>
+          <div class="mini-result">
+            <div class="result-label">NAG</div>
+            <div class="result-value orange" id="nag-val">—</div>
+            <div class="result-sub">Needed Acoustic Gain</div>
+          </div>
+        </div>
+        <div id="pag-status" class="tag-row"></div>
+        <div class="formula-hint">PAG = 20log(D2·D4/D1·D3) − 10log(NOM) + EAD</div>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">dB Converter</div>
+        <div class="card-desc">Convert between dB, voltage ratio, and power ratio</div>
+        <div class="field-row">
+          <div class="field"><label>dB Value</label><input id="db-val" type="number" placeholder="e.g. 6" oninput="calcDB()"></div>
+          <div class="field"><label>Reference Type</label>
+            <select id="db-type" onchange="calcDB()">
+              <option value="voltage">Voltage (dBV, dBu)</option>
+              <option value="power">Power (dBW, dBm)</option>
+            </select>
+          </div>
+        </div>
+        <div class="multi-result">
+          <div class="mini-result">
+            <div class="result-label">Ratio</div>
+            <div class="result-value orange" id="db-ratio">—</div>
+          </div>
+          <div class="mini-result">
+            <div class="result-label">Inverse (−dB)</div>
+            <div class="result-value" id="db-inv">—</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-desc" style="margin-bottom:10px;">Reverse: ratio → dB</div>
+        <div class="field-row">
+          <div class="field"><label>Ratio Value</label><input id="ratio-in" type="number" placeholder="e.g. 2.0" oninput="calcRatioToDB()"></div>
+          <div class="field"><label>Type</label>
+            <select id="ratio-type" onchange="calcRatioToDB()">
+              <option value="voltage">Voltage</option>
+              <option value="power">Power</option>
+            </select>
+          </div>
+        </div>
+        <div class="result orange" id="ratio-result">
+          <div class="result-label">dB Value</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter ratio above</div>
+        </div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Signal Level Reference</div>
+        <div class="card-desc">Common AV signal levels &amp; nominal operating levels</div>
+        <table class="info-table">
+          <thead><tr><th>Standard</th><th>Level</th><th>Voltage</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>Mic Level</td><td>−60 to −40 dBu</td><td>0.001–0.01 V</td><td><span class="badge badge-blue">Balanced</span></td></tr>
+            <tr><td>Line Level (Pro)</td><td>+4 dBu</td><td>1.23 V RMS</td><td><span class="badge badge-blue">Balanced</span></td></tr>
+            <tr><td>Line Level (Consumer)</td><td>−10 dBV</td><td>0.316 V RMS</td><td><span class="badge badge-orange">Unbal</span></td></tr>
+            <tr><td>AES/EBU Digital</td><td>+4 dBu nom.</td><td>110Ω balanced</td><td><span class="badge badge-green">Digital</span></td></tr>
+            <tr><td>S/PDIF</td><td>0.5 V p-p</td><td>75Ω coax</td><td><span class="badge badge-green">Digital</span></td></tr>
+            <tr><td>HDMI Audio</td><td>−18 dBFS</td><td>nominal</td><td><span class="badge badge-green">Digital</span></td></tr>
+            <tr><td>Speaker Level</td><td>+20 to +40 dBu</td><td>10–100 V</td><td><span class="badge badge-orange">High Z</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gain Structure Calculator</div>
+        <div class="card-desc">Cascaded gain stages — find total system gain</div>
+        <div class="field-row">
+          <div class="field"><label>Stage 1 Gain (dB)</label><input id="gs1" type="number" placeholder="e.g. 20" oninput="calcGainStructure()"></div>
+          <div class="field"><label>Stage 2 Gain (dB)</label><input id="gs2" type="number" placeholder="e.g. 6" oninput="calcGainStructure()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Stage 3 Gain (dB)</label><input id="gs3" type="number" placeholder="optional" oninput="calcGainStructure()"></div>
+          <div class="field"><label>Stage 4 Gain (dB)</label><input id="gs4" type="number" placeholder="optional" oninput="calcGainStructure()"></div>
+        </div>
+        <div class="result" id="gs-result">
+          <div class="result-label">Total System Gain</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter stage gains above</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CABLE & IMPEDANCE -->
+  <div class="section" id="cable">
+    <div class="section-title">Cable Length, Loss &amp; Impedance</div>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-title">Cable Voltage Drop</div>
+        <div class="card-desc">Calculate voltage drop over cable run for speaker/power circuits</div>
+        <div class="field-row">
+          <div class="field"><label>Cable Length (m)</label><input id="cd-len" type="number" placeholder="e.g. 50" oninput="calcCableDrop()"></div>
+          <div class="field"><label>Wire Gauge</label>
+            <select id="cd-gauge" onchange="calcCableDrop()">
+              <option value="3.66">0.5mm² (20AWG)</option>
+              <option value="2.44">0.75mm² (18AWG)</option>
+              <option value="1.83">1.0mm² (17AWG)</option>
+              <option value="1.22">1.5mm² (15AWG)</option>
+              <option value="0.73" selected>2.5mm² (13AWG)</option>
+              <option value="0.46">4.0mm² (11AWG)</option>
+              <option value="0.30">6.0mm² (9AWG)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Total Load (W)</label><input id="cd-curr" type="number" placeholder="e.g. 1200" oninput="calcCableDrop()"></div>
+          <div class="field"><label>System Voltage (V)</label><input id="cd-volt" type="number" placeholder="e.g. 240" value="240" oninput="calcCableDrop()"></div>
+        </div>
+        <div class="result" id="cd-result">
+          <div class="result-label">Voltage Drop Analysis</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">70V / 100V Line Tap Calculator</div>
+        <div class="card-desc">Calculate total load and number of speakers on distributed audio line</div>
+        <div class="field-row">
+          <div class="field"><label>Line Voltage</label>
+            <select id="hv-line" onchange="calcHVLine()">
+              <option value="70.7">70V Line</option>
+              <option value="100" selected>100V Line</option>
+            </select>
+          </div>
+          <div class="field"><label>Amp Power (W)</label><input id="hv-amp" type="number" placeholder="e.g. 240" oninput="calcHVLine()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Speaker Tap (W each)</label><input id="hv-tap" type="number" placeholder="e.g. 6" oninput="calcHVLine()"></div>
+          <div class="field"><label>No. of Speakers</label><input id="hv-num" type="number" placeholder="e.g. 20" oninput="calcHVLine()"></div>
+        </div>
+        <div class="result orange" id="hv-result">
+          <div class="result-label">Line Analysis</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+        <div class="formula-hint">Z = V² / P &nbsp;|&nbsp; Total Load = N × Tap Wattage</div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Coax Cable Loss Estimator</div>
+        <div class="card-desc">Estimate signal loss for common coax types at given frequency</div>
+        <div class="field-row">
+          <div class="field"><label>Cable Type</label>
+            <select id="coax-type" onchange="calcCoax()">
+              <option value="rg6">RG-6 (75Ω)</option>
+              <option value="rg59">RG-59 (75Ω)</option>
+              <option value="rg11">RG-11 (75Ω)</option>
+              <option value="rg58">RG-58 (50Ω)</option>
+              <option value="lmr400">LMR-400 (50Ω)</option>
+            </select>
+          </div>
+          <div class="field"><label>Frequency (MHz)</label><input id="coax-freq" type="number" placeholder="e.g. 1000" oninput="calcCoax()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Cable Length (m)</label><input id="coax-len" type="number" placeholder="e.g. 30" oninput="calcCoax()"></div>
+        </div>
+        <div class="result green" id="coax-result">
+          <div class="result-label">Estimated Loss</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-title">Impedance Mismatch Loss</div>
+        <div class="card-desc">Reflection loss from source/load impedance mismatch</div>
+        <div class="field-row">
+          <div class="field"><label>Source Impedance (Ω)</label><input id="imp-src" type="number" placeholder="e.g. 75" oninput="calcImpedance()"></div>
+          <div class="field"><label>Load Impedance (Ω)</label><input id="imp-load" type="number" placeholder="e.g. 50" oninput="calcImpedance()"></div>
+        </div>
+        <div class="result yellow" id="imp-result">
+          <div class="result-label">Mismatch Analysis</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter impedance values above</div>
+        </div>
+        <div class="formula-hint">RL = 20·log₁₀((Zl−Zs)/(Zl+Zs))</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DISPLAY & VIEWING -->
+  <div class="section" id="display">
+    <div class="section-title">Display, Projection &amp; Viewing Distance</div>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-title">Viewing Distance Calculator</div>
+        <div class="card-desc">Recommended viewing distances for displays and projection screens</div>
+        <div class="field-row">
+          <div class="field"><label>Screen Diagonal (inches)</label><input id="vd-size" type="number" placeholder="e.g. 85" oninput="calcViewDist()"></div>
+          <div class="field"><label>Resolution</label>
+            <select id="vd-res" onchange="calcViewDist()">
+              <option value="1080">1080p (FHD)</option>
+              <option value="1440">1440p (QHD)</option>
+              <option value="2160" selected>4K (UHD)</option>
+              <option value="4320">8K</option>
+            </select>
+          </div>
+        </div>
+        <div class="result" id="vd-result">
+          <div class="result-label">Recommended Viewing Distance</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter screen size above</div>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">Projector Throw Distance</div>
+        <div class="card-desc">Calculate throw distance from screen size and throw ratio</div>
+        <div class="field-row">
+          <div class="field"><label>Screen Width (m)</label><input id="pt-width" type="number" placeholder="e.g. 4.0" oninput="calcThrow()"></div>
+          <div class="field"><label>Throw Ratio</label><input id="pt-ratio" type="number" placeholder="e.g. 1.5" oninput="calcThrow()"></div>
+        </div>
+        <div class="result orange" id="pt-result">
+          <div class="result-label">Throw Distance</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-desc" style="margin-bottom:10px;">Reverse: find throw ratio from distance &amp; screen</div>
+        <div class="field-row">
+          <div class="field"><label>Known Distance (m)</label><input id="ptr-dist" type="number" placeholder="e.g. 6.0" oninput="calcThrowRev()"></div>
+          <div class="field"><label>Screen Width (m)</label><input id="ptr-width" type="number" placeholder="e.g. 4.0" oninput="calcThrowRev()"></div>
+        </div>
+        <div class="result orange" id="ptr-result">
+          <div class="result-label">Required Throw Ratio</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter values above</div>
+        </div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Screen Size from Room</div>
+        <div class="card-desc">Recommended screen size based on furthest viewer distance</div>
+        <div class="field-row">
+          <div class="field"><label>Furthest Viewer (m)</label><input id="ss-far" type="number" placeholder="e.g. 12" oninput="calcScreenSize()"></div>
+          <div class="field"><label>Use Case</label>
+            <select id="ss-use" onchange="calcScreenSize()">
+              <option value="boardroom">Boardroom / Data</option>
+              <option value="lecture">Lecture / Education</option>
+              <option value="cinema">Cinema / Video</option>
+            </select>
+          </div>
+        </div>
+        <div class="result green" id="ss-result">
+          <div class="result-label">Recommended Screen Diagonal</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter room depth above</div>
+        </div>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-title">HDMI / Cable Distance Guide</div>
+        <div class="card-desc">Max passive cable distances by resolution and cable type</div>
+        <table class="info-table">
+          <thead><tr><th>Signal</th><th>Type</th><th>Max Passive</th><th>With Extender</th></tr></thead>
+          <tbody>
+            <tr><td>HDMI 2.0 4K60</td><td>Copper</td><td>5–7 m</td><td>50–100 m (CAT/Fibre)</td></tr>
+            <tr><td>HDMI 1.4 1080p</td><td>Copper</td><td>10–15 m</td><td>70–100 m</td></tr>
+            <tr><td>DisplayPort 1.4</td><td>Copper</td><td>3–5 m</td><td>—</td></tr>
+            <tr><td>SDI (HD)</td><td>RG-6 Coax</td><td>100 m</td><td>300 m + repeater</td></tr>
+            <tr><td>SDI (3G)</td><td>RG-6 Coax</td><td>90 m</td><td>250 m + repeater</td></tr>
+            <tr><td>VGA</td><td>Copper</td><td>15–30 m</td><td>100 m (CAT)</td></tr>
+            <tr><td>DVI-D</td><td>Copper</td><td>10 m</td><td>50 m</td></tr>
+            <tr><td>HDBaseT</td><td>CAT6A</td><td>—</td><td>100 m native</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- THERMAL / BTU -->
+  <div class="section" id="thermal">
+    <div class="section-title">Thermal Management &amp; BTU Calculators</div>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-title">Equipment Heat Load (BTU/hr)</div>
+        <div class="card-desc">Calculate total heat dissipation from AV equipment power draw</div>
+        <div class="field-row">
+          <div class="field"><label>Total Power Draw (W)</label><input id="btu-w" type="number" placeholder="e.g. 2000" oninput="calcBTU()"></div>
+          <div class="field"><label>Efficiency Factor</label>
+            <select id="btu-eff" onchange="calcBTU()">
+              <option value="1.0">100% — Worst case</option>
+              <option value="0.9" selected>90% — Typical AV</option>
+              <option value="0.8">80% — Mixed load</option>
+              <option value="0.7">70% — Partial load</option>
+            </select>
+          </div>
+        </div>
+        <div class="result" id="btu-result">
+          <div class="result-label">Heat Dissipation</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter power draw above</div>
+        </div>
+        <div class="formula-hint">BTU/hr = Watts × 3.412 × heat factor</div>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">Rack Cooling Requirement</div>
+        <div class="card-desc">Estimate cooling needed for equipment rack(s)</div>
+        <div class="field-row">
+          <div class="field"><label>Number of Racks</label><input id="rack-num" type="number" placeholder="e.g. 3" oninput="calcRack()"></div>
+          <div class="field"><label>Avg Draw per Rack (W)</label><input id="rack-w" type="number" placeholder="e.g. 1500" oninput="calcRack()"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Room Area (m²)</label><input id="rack-area" type="number" placeholder="e.g. 20" oninput="calcRack()"></div>
+          <div class="field"><label>Room Type</label>
+            <select id="rack-room" onchange="calcRack()">
+              <option value="1.0">Server/AV Room (insulated)</option>
+              <option value="1.3" selected>Plant Room</option>
+              <option value="1.5">External/Hot Env</option>
+            </select>
+          </div>
+        </div>
+        <div class="result orange" id="rack-result">
+          <div class="result-label">Cooling Requirement</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter rack details above</div>
+        </div>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Watt ↔ BTU/hr Converter</div>
+        <div class="card-desc">Quick conversion between electrical watts and thermal BTU/hr</div>
+        <div class="field-row">
+          <div class="field"><label>Watts (W)</label><input id="conv-w" type="number" placeholder="e.g. 1000" oninput="convWattBTU('w')"></div>
+          <div class="field"><label>BTU/hr</label><input id="conv-btu" type="number" placeholder="e.g. 3412" oninput="convWattBTU('b')"></div>
+        </div>
+        <div class="result green" id="conv-result">
+          <div class="result-label">Conversion</div>
+          <div style="color:var(--text-dim); font-size:12px;">Enter either value above</div>
+        </div>
+        <div class="formula-hint">1 W = 3.41214 BTU/hr</div>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-title">BTU Cooling Reference</div>
+        <div class="card-desc">Common AV equipment typical heat loads</div>
+        <table class="info-table">
+          <thead><tr><th>Equipment</th><th>Typical Draw</th><th>BTU/hr</th></tr></thead>
+          <tbody>
+            <tr><td>Large Format Display (85")</td><td>350–500W</td><td>1195–1706</td></tr>
+            <tr><td>Video Wall Controller</td><td>200–400W</td><td>682–1365</td></tr>
+            <tr><td>Power Amplifier (rack)</td><td>500–2000W</td><td>1706–6824</td></tr>
+            <tr><td>AV over IP Switch (24-port)</td><td>100–200W</td><td>341–682</td></tr>
+            <tr><td>Projector (15k lm)</td><td>1500–3000W</td><td>5118–10236</td></tr>
+            <tr><td>DSP / Signal Processor</td><td>50–150W</td><td>170–512</td></tr>
+            <tr><td>UPS (1kVA)</td><td>~100W loss</td><td>~341</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RACK BUILDER -->
+  <div class="section" id="rack">
+    <div class="section-title">Rack Layout Builder</div>
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;">
+
+      <!-- Controls Panel -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div class="card">
+          <div class="card-title">Rack Settings</div>
+          <div class="card-desc">Configure rack unit size and name</div>
+          <div class="field"><label>Rack Name</label><input id="rack-name" type="text" value="Main AV Rack" style="margin-bottom:10px;"></div>
+          <div class="field-row">
+            <div class="field"><label>Rack Size (U)</label>
+              <select id="rack-size-sel" onchange="setRackSize()">
+                <option value="12">12U</option>
+                <option value="16">16U</option>
+                <option value="20">20U</option>
+                <option value="24">24U</option>
+                <option value="32" selected>32U</option>
+                <option value="42">42U</option>
+                <option value="45">45U</option>
+              </select>
+            </div>
+            <div class="field"><label>U Height (px)</label>
+              <select id="rack-u-height">
+                <option value="28">Compact</option>
+                <option value="36" selected>Standard</option>
+                <option value="44">Large</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn full" onclick="renderRack()">↺ Rebuild Rack</button>
+        </div>
+
+        <div class="card orange">
+          <div class="card-title">Add Equipment</div>
+          <div class="card-desc">Define a piece of gear to add to the rack</div>
+          <div class="field" style="margin-bottom:10px;">
+            <label>Equipment Name</label>
+            <input id="eq-name" type="text" placeholder="e.g. Crown XTi 6002">
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Size (U)</label>
+              <select id="eq-u">
+                <option value="1" selected>1U</option>
+                <option value="2">2U</option>
+                <option value="3">3U</option>
+                <option value="4">4U</option>
+                <option value="6">6U</option>
+              </select>
+            </div>
+            <div class="field"><label>Category</label>
+              <select id="eq-cat">
+                <option value="amp">Amplifier</option>
+                <option value="dsp">DSP / Processor</option>
+                <option value="mixer">Mixer / Console</option>
+                <option value="video">Video</option>
+                <option value="network">Network / IT</option>
+                <option value="power">Power / PDU</option>
+                <option value="patch">Patch Panel</option>
+                <option value="blank">Blank Panel</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Power (W)</label><input id="eq-watts" type="number" placeholder="e.g. 500"></div>
+            <div class="field"><label>Weight (kg)</label><input id="eq-kg" type="number" placeholder="e.g. 8"></div>
+          </div>
+          <button class="btn orange full" onclick="addEquipment()" style="margin-top:6px;">+ Add to Queue</button>
+        </div>
+
+        <div class="card green">
+          <div class="card-title">Quick Add</div>
+          <div class="card-desc">Common AV rack items</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('1U Blank','blank',1,0,0)">1U Blank</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('2U Blank','blank',2,0,0)">2U Blank</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('Patch Panel 24pt','patch',1,0,1)">Patch Panel</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('PDU 8-way','power',1,100,2)">PDU</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('UPS 1U','power',2,150,8)">UPS 2U</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('Rack Fan 1U','other',1,30,1)">Fan 1U</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('Dante Switch 1U','network',1,30,2)">Dante Switch</button>
+            <button class="btn green" style="font-size:10px;padding:6px 10px;" onclick="quickAdd('DSP Processor','dsp',1,80,3)">DSP 1U</button>
+          </div>
+        </div>
+
+        <!-- Rack Summary -->
+        <div class="card" id="rack-summary">
+          <div class="card-title">Rack Summary</div>
+          <div id="summary-content" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);">Add equipment to see summary</div>
+        </div>
+
+      </div>
+
+      <!-- Rack Visual -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div id="rack-title-display" style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--text-bright);text-transform:uppercase;">Main AV Rack</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" style="font-size:11px;padding:7px 14px;" onclick="exportRack()">⬇ Export PNG</button>
+            <button class="btn orange" style="font-size:11px;padding:7px 14px;" onclick="clearRack()">✕ Clear All</button>
+          </div>
+        </div>
+
+        <!-- Equipment Queue -->
+        <div id="eq-queue-wrap" style="margin-bottom:14px;display:none;">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;font-family:'Share Tech Mono',monospace;">Equipment Queue — drag to rack slots</div>
+          <div id="eq-queue" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+
+        <!-- Rack Frame -->
+        <div id="rack-frame" style="display:inline-block;min-width:100%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIRING GUIDES -->
+  <div class="section" id="wiring">
+    <div class="section-title">Cable Wiring Guides — Pinouts &amp; Diagrams</div>
+    <div class="grid grid-2">
+
+      <!-- XLR Balanced -->
+      <div class="card">
+        <div class="card-title">XLR — Balanced Audio</div>
+        <div class="card-desc">Standard 3-pin XLR balanced connection (male to female)</div>
+        <svg viewBox="0 0 420 180" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Male XLR -->
+          <ellipse cx="80" cy="90" rx="52" ry="62" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <ellipse cx="80" cy="90" rx="42" ry="52" fill="#141720" stroke="#4a5568" stroke-width="1"/>
+          <!-- Pin 1 bottom -->
+          <circle cx="80" cy="128" r="7" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="80" y="133" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#ffcc00">1</text>
+          <!-- Pin 2 top-left -->
+          <circle cx="58" cy="70" r="7" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="58" y="75" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00c8ff">2</text>
+          <!-- Pin 3 top-right -->
+          <circle cx="102" cy="70" r="7" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="102" y="75" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00ff9d">3</text>
+          <text x="80" y="175" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#5a6a80">MALE (XLR-M)</text>
+
+          <!-- Wires -->
+          <!-- Pin 1 GND -->
+          <line x1="132" y1="128" x2="290" y2="128" stroke="#ffcc00" stroke-width="2" stroke-dasharray="6,3"/>
+          <!-- Pin 2 HOT -->
+          <line x1="132" y1="70" x2="200" y2="70" stroke="#00c8ff" stroke-width="2"/>
+          <line x1="200" y1="70" x2="290" y2="70" stroke="#00c8ff" stroke-width="2"/>
+          <!-- Pin 3 COLD -->
+          <line x1="132" y1="90" x2="200" y2="90" stroke="#00ff9d" stroke-width="2"/>
+          <line x1="200" y1="90" x2="290" y2="90" stroke="#00ff9d" stroke-width="2"/>
+
+          <!-- Shield wrap -->
+          <rect x="190" y="55" width="20" height="80" rx="2" fill="none" stroke="#3a4255" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="200" y="148" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#3a4255">SHIELD</text>
+
+          <!-- Female XLR -->
+          <ellipse cx="340" cy="90" rx="52" ry="62" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <ellipse cx="340" cy="90" rx="42" ry="52" fill="#141720" stroke="#4a5568" stroke-width="1"/>
+          <!-- Pin 1 bottom -->
+          <circle cx="340" cy="128" r="7" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="340" y="133" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#ffcc00">1</text>
+          <!-- Pin 2 top-left -->
+          <circle cx="318" cy="70" r="7" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="318" y="75" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00c8ff">2</text>
+          <!-- Pin 3 top-right -->
+          <circle cx="362" cy="70" r="7" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="362" y="75" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00ff9d">3</text>
+          <text x="340" y="175" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#5a6a80">FEMALE (XLR-F)</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Pin</th><th>Signal</th><th>Colour (typical)</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#ffcc00">Pin 1</span></td><td>Ground / Shield</td><td>Bare / Black</td><td>Connect at both ends</td></tr>
+            <tr><td><span style="color:#00c8ff">Pin 2</span></td><td>Hot (+)</td><td>Red / White</td><td>Non-inverting signal</td></tr>
+            <tr><td><span style="color:#00ff9d">Pin 3</span></td><td>Cold (−)</td><td>Blue / Black</td><td>Inverting signal</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">AES14 standard. Pin 2 Hot is universal. Some older Neve/Studer equipment used Pin 3 Hot — check before connecting.</div>
+      </div>
+
+      <!-- XLR Balanced to Unbalanced RCA -->
+      <div class="card orange">
+        <div class="card-title">XLR Balanced → RCA Unbalanced</div>
+        <div class="card-desc">Connecting a balanced output to an unbalanced consumer input</div>
+        <svg viewBox="0 0 420 160" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- XLR Female end (source side) -->
+          <ellipse cx="75" cy="80" rx="48" ry="58" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <ellipse cx="75" cy="80" rx="38" ry="48" fill="#141720" stroke="#4a5568" stroke-width="1"/>
+          <circle cx="75" cy="112" r="6" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="75" y="117" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">1</text>
+          <circle cx="56" cy="62" r="6" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="56" y="67" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">2</text>
+          <circle cx="94" cy="62" r="6" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="94" y="67" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">3</text>
+          <text x="75" y="155" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">XLR SOURCE</text>
+
+          <!-- Wires -->
+          <line x1="123" y1="62" x2="290" y2="50" stroke="#00c8ff" stroke-width="2"/>
+          <line x1="123" y1="112" x2="210" y2="112" stroke="#ffcc00" stroke-width="2"/>
+          <line x1="210" y1="112" x2="290" y2="100" stroke="#ffcc00" stroke-width="2"/>
+          <!-- Pin 3 tied to ground at XLR end -->
+          <line x1="123" y1="80" x2="160" y2="80" stroke="#00ff9d" stroke-width="2"/>
+          <line x1="160" y1="80" x2="160" y2="112" stroke="#00ff9d" stroke-width="2"/>
+          <circle cx="160" cy="112" r="3" fill="#ffcc00"/>
+          <text x="155" y="76" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#00ff9d">TIE TO GND</text>
+          <text x="162" y="130" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">←PIN 3</text>
+
+          <!-- RCA plug -->
+          <circle cx="340" cy="75" rx="1" r="28" fill="#1a1f2a" stroke="#ff6b2b" stroke-width="2"/>
+          <circle cx="340" cy="75" r="8" fill="#ff6b2b" opacity="0.8"/>
+          <rect x="368" y="72" width="22" height="6" rx="3" fill="#ff6b2b"/>
+          <!-- Outer ring -->
+          <circle cx="340" cy="75" r="22" fill="none" stroke="#3a4255" stroke-width="6"/>
+          <circle cx="340" cy="75" r="22" fill="none" stroke="#ffcc00" stroke-width="2"/>
+          <text x="340" y="120" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">RCA DESTINATION</text>
+          <text x="358" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#00c8ff">TIP=HOT</text>
+          <text x="340" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#ffcc00">RING=GND</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>XLR Pin</th><th>→</th><th>RCA</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#00c8ff">Pin 2 (Hot)</span></td><td>→</td><td>Centre Tip</td><td>Signal conductor</td></tr>
+            <tr><td><span style="color:#ffcc00">Pin 1 (GND)</span></td><td>→</td><td>Outer Ring</td><td>Ground / shield</td></tr>
+            <tr><td><span style="color:#00ff9d">Pin 3 (Cold)</span></td><td>→</td><td>Tie to Pin 1</td><td>Ground at XLR end only</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">⚠ Tie Pin 3 to Pin 1 at the XLR end only — not at both ends. Expect ~6dB level drop vs balanced.</div>
+      </div>
+
+      <!-- TRS Balanced -->
+      <div class="card green">
+        <div class="card-title">TRS Jack — Balanced / Insert</div>
+        <div class="card-desc">6.35mm (¼") TRS — balanced line or insert send/return</div>
+        <svg viewBox="0 0 420 140" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- TRS plug body -->
+          <rect x="30" y="55" width="180" height="30" rx="4" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <!-- Tip -->
+          <rect x="210" y="62" width="60" height="16" rx="2" fill="#141720" stroke="#00c8ff" stroke-width="2"/>
+          <text x="240" y="74" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00c8ff">TIP</text>
+          <!-- Ring divider -->
+          <rect x="175" y="55" width="8" height="30" fill="#0a0c0f"/>
+          <!-- Ring -->
+          <text x="148" y="74" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00ff9d">RING</text>
+          <!-- Sleeve divider -->
+          <rect x="110" y="55" width="8" height="30" fill="#0a0c0f"/>
+          <!-- Sleeve -->
+          <text x="72" y="74" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#ffcc00">SLEEVE</text>
+
+          <!-- Labels below -->
+          <line x1="240" y1="78" x2="240" y2="105" stroke="#00c8ff" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="240" y="116" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">HOT (+)</text>
+          <line x1="148" y1="78" x2="148" y2="105" stroke="#00ff9d" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="148" y="116" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">COLD (−)</text>
+          <line x1="72" y1="78" x2="72" y2="105" stroke="#ffcc00" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="72" y="116" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">GND/SHIELD</text>
+
+          <!-- Insert use note -->
+          <text x="320" y="60" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">INSERT USE:</text>
+          <text x="320" y="74" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">TIP = SEND</text>
+          <text x="320" y="88" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">RING = RETURN</text>
+          <text x="320" y="102" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">SLV = GND</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Segment</th><th>Balanced Use</th><th>Insert Use</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#00c8ff">Tip</span></td><td>Hot (+) signal</td><td>Send (to outboard)</td></tr>
+            <tr><td><span style="color:#00ff9d">Ring</span></td><td>Cold (−) signal</td><td>Return (from outboard)</td></tr>
+            <tr><td><span style="color:#ffcc00">Sleeve</span></td><td>Ground / Shield</td><td>Ground / Shield</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">Insert cables are Y-split: one TRS plug → two TS plugs (Send + Return). Do not use an insert cable for balanced line — tip only will be mono unbalanced.</div>
+      </div>
+
+      <!-- Headphone to Dual Balanced XLR -->
+      <div class="card yellow">
+        <div class="card-title">Headphone TRS → Dual Balanced XLR</div>
+        <div class="card-desc">Splitting stereo headphone output into two balanced mono XLR channels</div>
+        <svg viewBox="0 0 420 180" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- TRS Source -->
+          <rect x="20" y="65" width="130" height="50" rx="4" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <rect x="150" y="73" width="50" height="34" rx="2" fill="#141720" stroke="#c87dff" stroke-width="2"/>
+          <text x="175" y="94" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#c87dff">TIP</text>
+          <rect x="108" y="65" width="8" height="50" fill="#0a0c0f"/>
+          <text x="65" y="87" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">RING</text>
+          <text x="65" y="100" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">SLEEVE</text>
+          <text x="85" y="130" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">STEREO TRS</text>
+
+          <!-- Split lines -->
+          <!-- Tip (L+) to XLR-L pin 2 -->
+          <line x1="200" y1="88" x2="240" y2="55" stroke="#c87dff" stroke-width="2"/>
+          <!-- Ring (R+) to XLR-R pin 2 -->
+          <line x1="116" y1="88" x2="240" y2="130" stroke="#00c8ff" stroke-width="2"/>
+          <!-- Sleeve GND to both XLR pin 1 -->
+          <line x1="116" y1="100" x2="230" y2="100" stroke="#ffcc00" stroke-width="1" stroke-dasharray="4,2"/>
+          <line x1="230" y1="100" x2="230" y2="68" stroke="#ffcc00" stroke-width="1" stroke-dasharray="4,2"/>
+          <line x1="230" y1="100" x2="230" y2="143" stroke="#ffcc00" stroke-width="1" stroke-dasharray="4,2"/>
+          <line x1="230" y1="68" x2="260" y2="68" stroke="#ffcc00" stroke-width="1" stroke-dasharray="4,2"/>
+          <line x1="230" y1="143" x2="260" y2="143" stroke="#ffcc00" stroke-width="1" stroke-dasharray="4,2"/>
+
+          <!-- XLR Left -->
+          <ellipse cx="310" cy="55" rx="40" ry="36" fill="#1a1f2a" stroke="#c87dff" stroke-width="2"/>
+          <circle cx="310" cy="72" r="5" fill="#2a3040" stroke="#ffcc00" stroke-width="1.5"/>
+          <text x="310" y="76" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#ffcc00">1</text>
+          <circle cx="295" cy="44" r="5" fill="#2a3040" stroke="#c87dff" stroke-width="1.5"/>
+          <text x="295" y="48" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#c87dff">2</text>
+          <circle cx="325" cy="44" r="5" fill="#2a3040" stroke="#3a4255" stroke-width="1.5"/>
+          <text x="325" y="48" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">3</text>
+          <text x="310" y="20" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#c87dff">L — XLR OUT</text>
+          <text x="370" y="44" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">Pin3→GND</text>
+
+          <!-- XLR Right -->
+          <ellipse cx="310" cy="135" rx="40" ry="36" fill="#1a1f2a" stroke="#00c8ff" stroke-width="2"/>
+          <circle cx="310" cy="152" r="5" fill="#2a3040" stroke="#ffcc00" stroke-width="1.5"/>
+          <text x="310" y="156" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#ffcc00">1</text>
+          <circle cx="295" cy="124" r="5" fill="#2a3040" stroke="#00c8ff" stroke-width="1.5"/>
+          <text x="295" y="128" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#00c8ff">2</text>
+          <circle cx="325" cy="124" r="5" fill="#2a3040" stroke="#3a4255" stroke-width="1.5"/>
+          <text x="325" y="128" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">3</text>
+          <text x="310" y="178" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">R — XLR OUT</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>TRS</th><th>→</th><th>XLR Ch.</th><th>Pin</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#c87dff">Tip (L+)</span></td><td>→</td><td>Left XLR</td><td>Pin 2 (Hot)</td></tr>
+            <tr><td><span style="color:#00c8ff">Ring (R+)</span></td><td>→</td><td>Right XLR</td><td>Pin 2 (Hot)</td></tr>
+            <tr><td><span style="color:#ffcc00">Sleeve (GND)</span></td><td>→</td><td>Both XLR</td><td>Pin 1 (GND)</td></tr>
+            <tr><td>—</td><td>→</td><td>Both XLR</td><td>Pin 3 → Pin 1</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">⚠ This is unbalanced signal on a balanced connector. Tie Pin 3 to Pin 1 at the XLR end. Expect noise on long runs — use a DI box for runs over 10m.</div>
+      </div>
+
+      <!-- XLR to TRS balanced -->
+      <div class="card">
+        <div class="card-title">XLR → TRS Balanced (Patch)</div>
+        <div class="card-desc">Standard balanced patch — XLR male to TRS jack</div>
+        <svg viewBox="0 0 420 130" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- XLR -->
+          <ellipse cx="75" cy="65" rx="48" ry="55" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <ellipse cx="75" cy="65" rx="38" ry="45" fill="#141720" stroke="#4a5568" stroke-width="1"/>
+          <circle cx="75" cy="95" r="6" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="75" y="100" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">1</text>
+          <circle cx="58" cy="48" r="6" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="58" y="53" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">2</text>
+          <circle cx="92" cy="48" r="6" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="92" y="53" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">3</text>
+          <text x="75" y="125" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">XLR MALE</text>
+
+          <!-- Wires -->
+          <line x1="123" y1="48" x2="270" y2="48" stroke="#00c8ff" stroke-width="2"/>
+          <line x1="123" y1="65" x2="270" y2="65" stroke="#00ff9d" stroke-width="2"/>
+          <line x1="123" y1="95" x2="270" y2="95" stroke="#ffcc00" stroke-width="2" stroke-dasharray="5,3"/>
+
+          <!-- Arrows/labels mid -->
+          <text x="196" y="44" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#00c8ff">HOT</text>
+          <text x="196" y="61" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#00ff9d">COLD</text>
+          <text x="196" y="91" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#ffcc00">GND</text>
+
+          <!-- TRS -->
+          <rect x="270" y="35" width="110" height="75" rx="4" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <rect x="380" y="48" width="25" height="14" rx="2" fill="#141720" stroke="#00c8ff" stroke-width="2"/>
+          <rect x="342" y="35" width="8" height="75" fill="#0a0c0f"/>
+          <text x="362" y="80" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">RING</text>
+          <text x="308" y="80" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">SLV</text>
+          <text x="393" y="59" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">TIP</text>
+          <text x="330" y="125" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">TRS JACK</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>XLR Pin</th><th>→</th><th>TRS Segment</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#00c8ff">Pin 2 (Hot)</span></td><td>→</td><td>Tip</td></tr>
+            <tr><td><span style="color:#00ff9d">Pin 3 (Cold)</span></td><td>→</td><td>Ring</td></tr>
+            <tr><td><span style="color:#ffcc00">Pin 1 (GND)</span></td><td>→</td><td>Sleeve</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Speakon NL4 -->
+      <div class="card orange">
+        <div class="card-title">SpeakON NL4 — Speaker Wiring</div>
+        <div class="card-desc">Neutrik NL4 4-pole SpeakON connector pinout</div>
+        <svg viewBox="0 0 420 160" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- NL4 body -->
+          <rect x="160" y="30" width="100" height="100" rx="50" fill="#1a1f2a" stroke="#ff6b2b" stroke-width="2"/>
+          <rect x="170" y="40" width="80" height="80" rx="40" fill="#141720" stroke="#3a4255" stroke-width="1"/>
+          <!-- 4 pins in NL4 pattern -->
+          <!-- 1+ top-left -->
+          <circle cx="191" cy="61" r="9" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="191" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">1+</text>
+          <!-- 1- top-right -->
+          <circle cx="229" cy="61" r="9" fill="#2a3040" stroke="#ff3d3d" stroke-width="2"/>
+          <text x="229" y="65" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ff3d3d">1−</text>
+          <!-- 2+ bottom-left -->
+          <circle cx="191" cy="99" r="9" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="191" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">2+</text>
+          <!-- 2- bottom-right -->
+          <circle cx="229" cy="99" r="9" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="229" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">2−</text>
+
+          <!-- Lines left -->
+          <line x1="182" y1="61" x2="80" y2="50" stroke="#00c8ff" stroke-width="2"/>
+          <line x1="182" y1="99" x2="80" y2="85" stroke="#00ff9d" stroke-width="2"/>
+          <text x="40" y="54" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">Ch1 HOT</text>
+          <text x="40" y="89" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">Ch2 HOT</text>
+
+          <!-- Lines right -->
+          <line x1="238" y1="61" x2="340" y2="50" stroke="#ff3d3d" stroke-width="2"/>
+          <line x1="238" y1="99" x2="340" y2="85" stroke="#ffcc00" stroke-width="2"/>
+          <text x="344" y="54" font-family="Share Tech Mono" font-size="8" fill="#ff3d3d">Ch1 NEG</text>
+          <text x="344" y="89" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">Ch2 NEG</text>
+
+          <text x="210" y="155" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">NL4 — FRONT VIEW (FEMALE/CHASSIS)</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Pin</th><th>Signal</th><th>Bi-amp / Mono use</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#00c8ff">1+</span></td><td>Channel 1 Positive</td><td>Full range / HF positive</td></tr>
+            <tr><td><span style="color:#ff3d3d">1−</span></td><td>Channel 1 Negative</td><td>Full range / HF negative</td></tr>
+            <tr><td><span style="color:#00ff9d">2+</span></td><td>Channel 2 Positive</td><td>LF positive (bi-amp)</td></tr>
+            <tr><td><span style="color:#ffcc00">2−</span></td><td>Channel 2 Negative</td><td>LF negative (bi-amp)</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">NL2 uses only 1+ and 1−. For mono full-range use 1+ and 1− only. Never connect speaker ground to chassis/earth.</div>
+      </div>
+
+      <!-- DMX 5-pin XLR -->
+      <div class="card green">
+        <div class="card-title">DMX512 — 5-Pin XLR</div>
+        <div class="card-desc">Standard DMX512 lighting control wiring (5-pin and 3-pin)</div>
+        <svg viewBox="0 0 420 160" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- 5-pin XLR body -->
+          <ellipse cx="90" cy="80" rx="58" ry="65" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <ellipse cx="90" cy="80" rx="48" ry="55" fill="#141720" stroke="#4a5568" stroke-width="1"/>
+          <!-- Pin arrangement 5-pin -->
+          <circle cx="90" cy="118" r="7" fill="#2a3040" stroke="#ffcc00" stroke-width="2"/>
+          <text x="90" y="123" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">1</text>
+          <circle cx="60" cy="98" r="7" fill="#2a3040" stroke="#00c8ff" stroke-width="2"/>
+          <text x="60" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">2</text>
+          <circle cx="120" cy="98" r="7" fill="#2a3040" stroke="#00ff9d" stroke-width="2"/>
+          <text x="120" y="103" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">3</text>
+          <circle cx="65" cy="62" r="7" fill="#2a3040" stroke="#c87dff" stroke-width="2"/>
+          <text x="65" y="67" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#c87dff">4</text>
+          <circle cx="115" cy="62" r="7" fill="#2a3040" stroke="#8888aa" stroke-width="2"/>
+          <text x="115" y="67" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#8888aa">5</text>
+          <text x="90" y="155" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">5-PIN XLR (MALE TX / FEMALE RX)</text>
+
+          <!-- Wire lines -->
+          <line x1="148" y1="118" x2="270" y2="118" stroke="#ffcc00" stroke-width="2" stroke-dasharray="5,3"/>
+          <line x1="148" y1="98" x2="270" y2="88" stroke="#00c8ff" stroke-width="2"/>
+          <line x1="148" y1="100" x2="270" y2="108" stroke="#00ff9d" stroke-width="2"/>
+          <line x1="148" y1="62" x2="270" y2="62" stroke="#c87dff" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="148" y1="64" x2="270" y2="72" stroke="#8888aa" stroke-width="1" stroke-dasharray="3,3"/>
+
+          <!-- Labels -->
+          <text x="275" y="122" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">GND / SHIELD</text>
+          <text x="275" y="92" font-family="Share Tech Mono" font-size="8" fill="#00c8ff">DATA 1− (Univ.)</text>
+          <text x="275" y="112" font-family="Share Tech Mono" font-size="8" fill="#00ff9d">DATA 1+ (Univ.)</text>
+          <text x="275" y="66" font-family="Share Tech Mono" font-size="8" fill="#c87dff">DATA 2− (spare)</text>
+          <text x="275" y="76" font-family="Share Tech Mono" font-size="8" fill="#8888aa">DATA 2+ (spare)</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Pin</th><th>Signal</th><th>3-Pin Equiv.</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#ffcc00">1</span></td><td>Ground / Shield</td><td>Pin 1</td></tr>
+            <tr><td><span style="color:#00c8ff">2</span></td><td>Data 1 − (Cold)</td><td>Pin 2</td></tr>
+            <tr><td><span style="color:#00ff9d">3</span></td><td>Data 1 + (Hot)</td><td>Pin 3</td></tr>
+            <tr><td><span style="color:#c87dff">4</span></td><td>Data 2 − (unused)</td><td>—</td></tr>
+            <tr><td><span style="color:#8888aa">5</span></td><td>Data 2 + (unused)</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">⚠ Always terminate the DMX line with a 120Ω resistor between Pin 2 and Pin 3 at the last fixture. Max 32 devices per universe without splitter. Use DMX-rated 110Ω cable — not standard mic cable.</div>
+      </div>
+
+      <!-- BNC Video -->
+      <div class="card yellow">
+        <div class="card-title">BNC — SDI / Video / RF</div>
+        <div class="card-desc">75Ω BNC coaxial wiring for SDI, composite video and RF signals</div>
+        <svg viewBox="0 0 420 140" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Coax cable cross section -->
+          <line x1="30" y1="70" x2="390" y2="70" stroke="#00c8ff" stroke-width="3"/>
+          <!-- Outer shield -->
+          <rect x="30" y="45" width="360" height="50" rx="4" fill="none" stroke="#ffcc00" stroke-width="2" stroke-dasharray="6,3"/>
+          <!-- Dielectric -->
+          <rect x="30" y="55" width="360" height="30" rx="2" fill="rgba(0,200,255,0.05)" stroke="#3a4255" stroke-width="1"/>
+
+          <!-- BNC connector left -->
+          <rect x="15" y="40" width="20" height="60" rx="3" fill="#1a1f2a" stroke="#ffcc00" stroke-width="2"/>
+          <circle cx="25" cy="70" r="5" fill="#00c8ff"/>
+
+          <!-- BNC connector right -->
+          <rect x="385" y="40" width="20" height="60" rx="3" fill="#1a1f2a" stroke="#ffcc00" stroke-width="2"/>
+          <circle cx="395" cy="70" r="5" fill="#00c8ff"/>
+
+          <!-- Labels -->
+          <text x="210" y="67" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#00c8ff">CENTRE CONDUCTOR — SIGNAL</text>
+          <text x="210" y="90" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#ffcc00">OUTER BRAID SHIELD — GROUND (75Ω)</text>
+
+          <!-- Dimension labels -->
+          <text x="30" y="115" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">BNC-M</text>
+          <text x="370" y="115" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">BNC-M</text>
+          <text x="210" y="130" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">75Ω COAX (RG-6 / RG-59 / Belden 1694A)</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Conductor</th><th>Signal</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:#00c8ff">Centre Pin</span></td><td>Video / RF signal</td><td>Do not ground</td></tr>
+            <tr><td><span style="color:#ffcc00">Outer Shield</span></td><td>Ground / Return</td><td>Connect at both ends for video</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">Always use 75Ω rated cable and connectors for SDI/video. Never use 50Ω RF cable (RG-58) for video — impedance mismatch causes reflections. Terminate unused BNC outputs with 75Ω terminator.</div>
+      </div>
+
+      <!-- HDMI ARC/eARC note card -->
+      <div class="card">
+        <div class="card-title">Ethernet Cat6 — 568B Standard</div>
+        <div class="card-desc">TIA/EIA 568B wiring for structured cabling, Dante, AES67, HDBaseT</div>
+        <svg viewBox="0 0 420 150" style="width:100%;margin:10px 0;" xmlns="http://www.w3.org/2000/svg">
+          <!-- RJ45 body -->
+          <rect x="150" y="30" width="120" height="90" rx="4" fill="#1a1f2a" stroke="#3a4255" stroke-width="2"/>
+          <!-- 8 pins -->
+          <rect x="162" y="100" width="8" height="20" rx="1" fill="#ff6b2b"/>
+          <rect x="174" y="100" width="8" height="20" rx="1" fill="#ff6b2b" opacity="0.5"/>
+          <rect x="186" y="100" width="8" height="20" rx="1" fill="#00c8ff"/>
+          <rect x="198" y="100" width="8" height="20" rx="1" fill="#00c8ff" opacity="0.5"/>
+          <rect x="210" y="100" width="8" height="20" rx="1" fill="#00ff9d"/>
+          <rect x="222" y="100" width="8" height="20" rx="1" fill="#00ff9d" opacity="0.5"/>
+          <rect x="234" y="100" width="8" height="20" rx="1" fill="#ffcc00"/>
+          <rect x="246" y="100" width="8" height="20" rx="1" fill="#ffcc00" opacity="0.5"/>
+
+          <!-- Pin numbers -->
+          <text x="166" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">1</text>
+          <text x="178" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">2</text>
+          <text x="190" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">3</text>
+          <text x="202" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">4</text>
+          <text x="214" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">5</text>
+          <text x="226" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">6</text>
+          <text x="238" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">7</text>
+          <text x="250" y="98" text-anchor="middle" font-family="Share Tech Mono" font-size="7" fill="#5a6a80">8</text>
+          <text x="210" y="145" text-anchor="middle" font-family="Share Tech Mono" font-size="8" fill="#5a6a80">RJ45 — 568B (CLIP DOWN, LEFT=PIN1)</text>
+        </svg>
+        <table class="info-table">
+          <thead><tr><th>Pin</th><th>Colour (568B)</th><th>Pair</th><th>Function</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td><span style="color:#ff6b2b">Orange/White</span></td><td>Pair 2</td><td>TX+</td></tr>
+            <tr><td>2</td><td><span style="color:#ff6b2b; opacity:0.7">Orange</span></td><td>Pair 2</td><td>TX−</td></tr>
+            <tr><td>3</td><td><span style="color:#00c8ff">Green/White</span></td><td>Pair 3</td><td>RX+</td></tr>
+            <tr><td>4</td><td><span style="color:#00ff9d">Blue</span></td><td>Pair 1</td><td>Unused (PoE)</td></tr>
+            <tr><td>5</td><td><span style="color:#00ff9d; opacity:0.7">Blue/White</span></td><td>Pair 1</td><td>Unused (PoE)</td></tr>
+            <tr><td>6</td><td><span style="color:#00c8ff; opacity:0.7">Green</span></td><td>Pair 3</td><td>RX−</td></tr>
+            <tr><td>7</td><td><span style="color:#ffcc00">Brown/White</span></td><td>Pair 4</td><td>Unused (PoE)</td></tr>
+            <tr><td>8</td><td><span style="color:#ffcc00; opacity:0.7">Brown</span></td><td>Pair 4</td><td>Unused (PoE)</td></tr>
+          </tbody>
+        </table>
+        <div class="formula-hint" style="margin-top:10px;">568A swaps pairs 2 &amp; 3 (pins 1,2 and 3,6). Use 568B throughout for new installs. For Dante/AES67 use Cat6 STP minimum. HDBaseT requires Cat6A STP for 100m at 4K.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="section" id="reference">
+    <div class="section-title">Quick Reference — AV Integration Standards</div>
+    <div class="grid grid-3">
+
+      <div class="card">
+        <div class="card-title">Common Impedances</div>
+        <div class="card-desc">Standard impedance values in AV systems</div>
+        <table class="info-table">
+          <thead><tr><th>Application</th><th>Impedance</th></tr></thead>
+          <tbody>
+            <tr><td>Balanced Audio (XLR)</td><td>110Ω</td></tr>
+            <tr><td>Unbalanced Audio (RCA)</td><td>75Ω / Hi-Z</td></tr>
+            <tr><td>Microphone (dynamic)</td><td>150–600Ω</td></tr>
+            <tr><td>Mic Preamp Input</td><td>1–10 kΩ</td></tr>
+            <tr><td>Speaker (nominal)</td><td>4, 6, 8, 16Ω</td></tr>
+            <tr><td>Video / SDI Coax</td><td>75Ω</td></tr>
+            <tr><td>RF / Antenna</td><td>50Ω / 75Ω</td></tr>
+            <tr><td>Dante / AES67 (Cat)</td><td>100Ω (Cat6)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">dB Quick Reference</div>
+        <div class="card-desc">Common dB values and their ratio equivalents</div>
+        <table class="info-table">
+          <thead><tr><th>dB</th><th>Voltage ×</th><th>Power ×</th></tr></thead>
+          <tbody>
+            <tr><td>+3 dB</td><td>×1.41</td><td>×2</td></tr>
+            <tr><td>+6 dB</td><td>×2</td><td>×4</td></tr>
+            <tr><td>+10 dB</td><td>×3.16</td><td>×10</td></tr>
+            <tr><td>+20 dB</td><td>×10</td><td>×100</td></tr>
+            <tr><td>−3 dB</td><td>×0.707</td><td>×0.5</td></tr>
+            <tr><td>−6 dB</td><td>×0.5</td><td>×0.25</td></tr>
+            <tr><td>−10 dB</td><td>×0.316</td><td>×0.1</td></tr>
+            <tr><td>−20 dB</td><td>×0.1</td><td>×0.01</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card green">
+        <div class="card-title">Wire Gauge Reference</div>
+        <div class="card-desc">AWG / mm² equivalents and typical AV applications</div>
+        <table class="info-table">
+          <thead><tr><th>mm²</th><th>AWG</th><th>Max A</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td>0.5</td><td>20</td><td>3A</td><td>Signal, low V</td></tr>
+            <tr><td>0.75</td><td>18</td><td>6A</td><td>Speaker, signal</td></tr>
+            <tr><td>1.0</td><td>17</td><td>10A</td><td>Speaker runs</td></tr>
+            <tr><td>1.5</td><td>15</td><td>15A</td><td>Power (light)</td></tr>
+            <tr><td>2.5</td><td>13</td><td>20A</td><td>Power (std)</td></tr>
+            <tr><td>4.0</td><td>11</td><td>25A</td><td>Power (heavy)</td></tr>
+            <tr><td>6.0</td><td>9</td><td>32A</td><td>Three-phase</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-title">Connector Quick Reference</div>
+        <div class="card-desc">Common AV connectors and their applications</div>
+        <table class="info-table">
+          <thead><tr><th>Connector</th><th>Signal</th><th>Impedance</th></tr></thead>
+          <tbody>
+            <tr><td>XLR 3-pin</td><td>Balanced audio</td><td>110Ω</td></tr>
+            <tr><td>BNC</td><td>SDI / RF / Video</td><td>75Ω</td></tr>
+            <tr><td>RJ45 (STP)</td><td>Dante / AES67</td><td>100Ω</td></tr>
+            <tr><td>SpeakON NL4</td><td>Speaker</td><td>4–16Ω</td></tr>
+            <tr><td>TRS 6.35mm</td><td>Insert / TRS</td><td>Hi-Z</td></tr>
+            <tr><td>F-connector</td><td>RF/Antenna/CATV</td><td>75Ω</td></tr>
+            <tr><td>LC Fibre</td><td>HDMI / Video</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SPL Reference Levels</div>
+        <div class="card-desc">Common SPL benchmarks for AV system design</div>
+        <table class="info-table">
+          <thead><tr><th>Environment</th><th>Target SPL</th></tr></thead>
+          <tbody>
+            <tr><td>Boardroom / Conference</td><td>70–80 dB SPL</td></tr>
+            <tr><td>Lecture Theatre</td><td>80–90 dB SPL</td></tr>
+            <tr><td>Auditorium</td><td>90–100 dB SPL</td></tr>
+            <tr><td>Live Event / Concert</td><td>100–115 dB SPL</td></tr>
+            <tr><td>Background Music</td><td>65–75 dB SPL</td></tr>
+            <tr><td>OSHA 8-hr Limit</td><td>90 dB SPL</td></tr>
+            <tr><td>Pain Threshold</td><td>~130 dB SPL</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card orange">
+        <div class="card-title">Video Resolution Reference</div>
+        <div class="card-desc">Standard video resolutions and pixel counts</div>
+        <table class="info-table">
+          <thead><tr><th>Name</th><th>Resolution</th><th>Pixels</th></tr></thead>
+          <tbody>
+            <tr><td>HD (720p)</td><td>1280×720</td><td>0.9 MP</td></tr>
+            <tr><td>FHD (1080p)</td><td>1920×1080</td><td>2.1 MP</td></tr>
+            <tr><td>QHD (1440p)</td><td>2560×1440</td><td>3.7 MP</td></tr>
+            <tr><td>4K UHD</td><td>3840×2160</td><td>8.3 MP</td></tr>
+            <tr><td>4K DCI</td><td>4096×2160</td><td>8.8 MP</td></tr>
+            <tr><td>8K UHD</td><td>7680×4320</td><td>33.2 MP</td></tr>
+            <tr><td>LED Wall p1.9</td><td>Custom</td><td>Module based</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${id}"]`).classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function fmt(n, d=2) { return isNaN(n)||!isFinite(n) ? '—' : Number(n.toFixed(d)).toLocaleString(); }
+
+// OHM'S LAW
+function calcOhm() {
+  const V = parseFloat(document.getElementById('ohm-v').value);
+  const I = parseFloat(document.getElementById('ohm-i').value);
+  const R = parseFloat(document.getElementById('ohm-r').value);
+  const P = parseFloat(document.getElementById('ohm-p').value);
+  const vals = [!isNaN(V), !isNaN(I), !isNaN(R), !isNaN(P)];
+  const count = vals.filter(Boolean).length;
+  const r = document.getElementById('ohm-result');
+  if (count < 2) { r.innerHTML='<div class="result-label">Result</div><div style="color:var(--text-dim);font-size:12px;">Enter any two values above</div>'; return; }
+  let results = {};
+  if (!isNaN(V) && !isNaN(I)) { results = { V, I, R: V/I, P: V*I }; }
+  else if (!isNaN(V) && !isNaN(R)) { results = { V, R, I: V/R, P: V*V/R }; }
+  else if (!isNaN(V) && !isNaN(P)) { results = { V, P, I: P/V, R: V*V/P }; }
+  else if (!isNaN(I) && !isNaN(R)) { results = { I, R, V: I*R, P: I*I*R }; }
+  else if (!isNaN(I) && !isNaN(P)) { results = { I, P, V: P/I, R: P/(I*I) }; }
+  else if (!isNaN(R) && !isNaN(P)) { results = { R, P, V: Math.sqrt(P*R), I: Math.sqrt(P/R) }; }
+  r.innerHTML = `<div class="result-label">Calculated Values</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+      <div><span style="color:var(--text-dim);font-size:10px;">VOLTAGE</span><br><span class="result-value" style="font-size:18px;">${fmt(results.V)} V</span></div>
+      <div><span style="color:var(--text-dim);font-size:10px;">CURRENT</span><br><span class="result-value" style="font-size:18px;">${fmt(results.I)} A</span></div>
+      <div><span style="color:var(--text-dim);font-size:10px;">RESISTANCE</span><br><span class="result-value" style="font-size:18px;">${fmt(results.R)} Ω</span></div>
+      <div><span style="color:var(--text-dim);font-size:10px;">POWER</span><br><span class="result-value" style="font-size:18px;">${fmt(results.P)} W</span></div>
+    </div>`;
+}
+
+// PARALLEL IMPEDANCE
+function calcParallel() {
+  const vals = [1,2,3,4].map(i => parseFloat(document.getElementById('sp'+i).value)).filter(v => !isNaN(v) && v > 0);
+  const r = document.getElementById('parallel-result');
+  if (vals.length < 2) { r.innerHTML='<div class="result-label">Combined Impedance</div><div style="color:var(--text-dim);font-size:12px;">Enter at least 2 speaker values</div>'; return; }
+  const Ztotal = 1 / vals.reduce((s, v) => s + 1/v, 0);
+  const minZ = Math.min(...vals);
+  let tag = '';
+  if (Ztotal < 2) tag = '<span class="danger-tag">⚠ BELOW 2Ω — CHECK AMP RATING</span>';
+  else if (Ztotal < 4) tag = '<span class="warn-tag">⚠ LOW IMPEDANCE — VERIFY AMP</span>';
+  else tag = '<span class="ok-tag">✓ WITHIN NORMAL RANGE</span>';
+  r.innerHTML = `<div class="result-label">Combined Impedance</div>
+    <div class="result-value orange">${fmt(Ztotal, 2)} Ω</div>
+    <div class="result-sub">${vals.length} speakers in parallel</div>
+    ${tag}`;
+}
+
+// SPL
+function calcSPL() {
+  const W = parseFloat(document.getElementById('amp-w').value);
+  const sens = parseFloat(document.getElementById('amp-sens').value);
+  const d = parseFloat(document.getElementById('amp-dist').value);
+  const r = document.getElementById('spl-result');
+  if (isNaN(W)||isNaN(sens)) { r.innerHTML='<div class="result-label">Estimated SPL</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const dist = isNaN(d)||d<=0 ? 1 : d;
+  const spl = sens + 10*Math.log10(W) - 20*Math.log10(dist);
+  r.innerHTML = `<div class="result-label">SPL at ${fmt(dist,1)}m</div>
+    <div class="result-value green">${fmt(spl,1)} dB SPL</div>
+    <div class="result-sub">${fmt(W)} W into ${fmt(sens,0)} dB/W/m speaker</div>`;
+}
+
+// BREAKER
+function calcBreaker() {
+  const W = parseFloat(document.getElementById('cb-w').value);
+  const V = parseFloat(document.getElementById('cb-v').value);
+  const A = parseFloat(document.getElementById('cb-amp').value);
+  const r = document.getElementById('breaker-result');
+  if (isNaN(W)||isNaN(V)) { r.innerHTML='<div class="result-label">Load Analysis</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const drawn = W / V;
+  const pct = isNaN(A) ? null : (drawn / A * 100);
+  let tag = '';
+  if (pct !== null) {
+    if (pct > 100) tag = '<span class="danger-tag">⚠ OVERLOADED</span>';
+    else if (pct > 80) tag = '<span class="warn-tag">⚠ EXCEEDS 80% RULE</span>';
+    else tag = '<span class="ok-tag">✓ WITHIN 80% RULE</span>';
+  }
+  r.innerHTML = `<div class="result-label">Load Analysis</div>
+    <div class="result-value yellow">${fmt(drawn,2)} A</div>
+    <div class="result-sub">Current draw at ${V}V</div>
+    ${pct !== null ? `<div class="result-sub" style="margin-top:4px;">Load: ${fmt(pct,1)}% of ${A}A breaker</div>` : ''}
+    ${tag}`;
+}
+
+// PAG / NAG
+function calcPAG() {
+  const d1 = parseFloat(document.getElementById('pag-d1').value);
+  const d2 = parseFloat(document.getElementById('pag-d2').value);
+  const d3 = parseFloat(document.getElementById('pag-d3').value);
+  const d4 = parseFloat(document.getElementById('pag-d4').value);
+  const nom = parseFloat(document.getElementById('pag-nom').value) || 1;
+  const ead = parseFloat(document.getElementById('pag-ead').value) || 0;
+  if ([d1,d2,d3,d4].some(isNaN)) return;
+  const PAG = 20*Math.log10((d2*d4)/(d1*d3)) - 10*Math.log10(nom) + ead;
+  const NAG = 20*Math.log10(d4/d1);
+  const margin = PAG - NAG;
+  document.getElementById('pag-val').textContent = fmt(PAG,1) + ' dB';
+  document.getElementById('nag-val').textContent = fmt(NAG,1) + ' dB';
+  const st = document.getElementById('pag-status');
+  if (margin >= 6) st.innerHTML = '<span class="ok-tag">✓ GOOD MARGIN (+'+fmt(margin,1)+'dB)</span>';
+  else if (margin >= 0) st.innerHTML = '<span class="warn-tag">⚠ MARGINAL ('+fmt(margin,1)+'dB) — feedback risk</span>';
+  else st.innerHTML = '<span class="danger-tag">✗ SYSTEM WILL FEEDBACK ('+fmt(margin,1)+'dB)</span>';
+}
+
+// dB CONVERTER
+function calcDB() {
+  const db = parseFloat(document.getElementById('db-val').value);
+  const type = document.getElementById('db-type').value;
+  if (isNaN(db)) return;
+  const ratio = type === 'voltage' ? Math.pow(10, db/20) : Math.pow(10, db/10);
+  const invRatio = type === 'voltage' ? Math.pow(10, -db/20) : Math.pow(10, -db/10);
+  document.getElementById('db-ratio').textContent = fmt(ratio, 4) + '×';
+  document.getElementById('db-inv').textContent = fmt(invRatio, 4) + '×';
+}
+
+function calcRatioToDB() {
+  const ratio = parseFloat(document.getElementById('ratio-in').value);
+  const type = document.getElementById('ratio-type').value;
+  const r = document.getElementById('ratio-result');
+  if (isNaN(ratio)||ratio<=0) { r.innerHTML='<div class="result-label">dB Value</div><div style="color:var(--text-dim);font-size:12px;">Enter ratio above</div>'; return; }
+  const db = type === 'voltage' ? 20*Math.log10(ratio) : 10*Math.log10(ratio);
+  r.innerHTML = `<div class="result-label">dB Value</div><div class="result-value orange">${fmt(db,2)} dB</div>`;
+}
+
+// GAIN STRUCTURE
+function calcGainStructure() {
+  const vals = [1,2,3,4].map(i => parseFloat(document.getElementById('gs'+i).value)).filter(v => !isNaN(v));
+  const r = document.getElementById('gs-result');
+  if (vals.length === 0) { r.innerHTML='<div class="result-label">Total System Gain</div><div style="color:var(--text-dim);font-size:12px;">Enter stage gains above</div>'; return; }
+  const total = vals.reduce((s,v) => s+v, 0);
+  r.innerHTML = `<div class="result-label">Total Gain (${vals.length} stages)</div>
+    <div class="result-value">${fmt(total,1)} dB</div>
+    <div class="result-sub">Stages: ${vals.map(v=>(v>=0?'+':'')+fmt(v,1)+'dB').join(' → ')}</div>`;
+}
+
+// CABLE DROP
+function calcCableDrop() {
+  const len = parseFloat(document.getElementById('cd-len').value);
+  const res = parseFloat(document.getElementById('cd-gauge').value); // Ω/100m
+  const W = parseFloat(document.getElementById('cd-curr').value);
+  const V = parseFloat(document.getElementById('cd-volt').value) || 240;
+  const r = document.getElementById('cd-result');
+  if (isNaN(len)||isNaN(W)) { r.innerHTML='<div class="result-label">Voltage Drop Analysis</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const I = W / V; // derive current from watts and voltage
+  // Total resistance = (Ω/100m per conductor) × 2 conductors × length / 100
+  const R = res * 2 * len / 100;
+  const Vdrop = I * R;
+  const pctDrop = Vdrop / V * 100;
+  let tag = '';
+  if (pctDrop > 5) tag = '<span class="danger-tag">⚠ EXCEEDS 5% DROP LIMIT</span>';
+  else if (pctDrop > 3) tag = '<span class="warn-tag">⚠ ABOVE 3% — CONSIDER UPSIZING</span>';
+  else tag = '<span class="ok-tag">✓ WITHIN LIMITS</span>';
+  r.innerHTML = `<div class="result-label">Voltage Drop</div>
+    <div class="result-value">${fmt(Vdrop,2)} V</div>
+    <div class="result-sub">${fmt(pctDrop,2)}% drop · ${fmt(I,2)}A draw · Cable R: ${fmt(R,3)}Ω (both ways)</div>
+    ${tag}`;
+}
+
+// 100V LINE
+function calcHVLine() {
+  const lineV = parseFloat(document.getElementById('hv-line').value);
+  const ampW = parseFloat(document.getElementById('hv-amp').value);
+  const tap = parseFloat(document.getElementById('hv-tap').value);
+  const num = parseFloat(document.getElementById('hv-num').value);
+  const r = document.getElementById('hv-result');
+  if (isNaN(tap)||isNaN(num)) { r.innerHTML='<div class="result-label">Line Analysis</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const totalLoad = tap * num;
+  const lineZ = lineV * lineV / (isNaN(ampW)||ampW<=0 ? totalLoad : ampW);
+  let tag = '';
+  if (!isNaN(ampW) && totalLoad > ampW) tag = '<span class="danger-tag">⚠ TOTAL LOAD EXCEEDS AMP RATING</span>';
+  else if (!isNaN(ampW) && totalLoad > ampW * 0.8) tag = '<span class="warn-tag">⚠ LOAD ABOVE 80% — CHECK HEADROOM</span>';
+  else if (!isNaN(ampW)) tag = '<span class="ok-tag">✓ LOAD WITHIN AMP RATING</span>';
+  r.innerHTML = `<div class="result-label">Line Analysis</div>
+    <div class="result-value orange">${fmt(totalLoad)} W total load</div>
+    <div class="result-sub">${num} × ${tap}W speakers | Line Z: ${fmt(lineZ,1)}Ω</div>
+    ${!isNaN(ampW) ? `<div class="result-sub">${fmt(totalLoad/ampW*100,1)}% of ${ampW}W amp</div>` : ''}
+    ${tag}`;
+}
+
+// COAX LOSS
+function calcCoax() {
+  const type = document.getElementById('coax-type').value;
+  const freq = parseFloat(document.getElementById('coax-freq').value);
+  const len = parseFloat(document.getElementById('coax-len').value);
+  const r = document.getElementById('coax-result');
+  if (isNaN(freq)||isNaN(len)) { r.innerHTML='<div class="result-label">Estimated Loss</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  // Approximate loss coefficients (dB/100m at 1GHz, scaled by sqrt(f))
+  const coefAt1GHz = { rg6: 7.5, rg59: 12, rg11: 4.5, rg58: 22, lmr400: 2.7 };
+  const coef = coefAt1GHz[type];
+  const lossPerHundred = coef * Math.sqrt(freq/1000);
+  const totalLoss = lossPerHundred * len / 100;
+  let tag = '';
+  if (totalLoss > 20) tag = '<span class="danger-tag">⚠ HIGH LOSS — CONSIDER SHORTER RUN OR UPGRADE</span>';
+  else if (totalLoss > 10) tag = '<span class="warn-tag">⚠ SIGNIFICANT LOSS — CHECK BUDGET</span>';
+  else tag = '<span class="ok-tag">✓ ACCEPTABLE LOSS</span>';
+  r.innerHTML = `<div class="result-label">Estimated Loss</div>
+    <div class="result-value green">−${fmt(totalLoss,1)} dB</div>
+    <div class="result-sub">${fmt(lossPerHundred,1)} dB/100m at ${freq}MHz | ${len}m run</div>
+    ${tag}`;
+}
+
+// IMPEDANCE MISMATCH
+function calcImpedance() {
+  const Zs = parseFloat(document.getElementById('imp-src').value);
+  const Zl = parseFloat(document.getElementById('imp-load').value);
+  const r = document.getElementById('imp-result');
+  if (isNaN(Zs)||isNaN(Zl)) { r.innerHTML='<div class="result-label">Mismatch Analysis</div><div style="color:var(--text-dim);font-size:12px;">Enter impedance values above</div>'; return; }
+  const rl = Math.abs(20*Math.log10(Math.abs((Zl-Zs)/(Zl+Zs))));
+  const vswr = (Math.max(Zs,Zl)/Math.min(Zs,Zl));
+  let tag = '';
+  if (rl > 20) tag = '<span class="ok-tag">✓ GOOD MATCH (>20dB RL)</span>';
+  else if (rl > 10) tag = '<span class="warn-tag">⚠ MARGINAL MATCH</span>';
+  else tag = '<span class="danger-tag">⚠ POOR MATCH — USE MATCHING NETWORK</span>';
+  r.innerHTML = `<div class="result-label">Mismatch Loss</div>
+    <div class="result-value yellow">${fmt(rl,1)} dB Return Loss</div>
+    <div class="result-sub">VSWR: ${fmt(vswr,2)}:1</div>
+    ${tag}`;
+}
+
+// VIEWING DISTANCE
+function calcViewDist() {
+  const size = parseFloat(document.getElementById('vd-size').value);
+  const res = parseInt(document.getElementById('vd-res').value);
+  const r = document.getElementById('vd-result');
+  if (isNaN(size)) { r.innerHTML='<div class="result-label">Recommended Viewing Distance</div><div style="color:var(--text-dim);font-size:12px;">Enter screen size above</div>'; return; }
+  const sizeM = size * 0.0254;
+  const widthM = sizeM * (16/Math.sqrt(16*16+9*9));
+  const pixelPitch = widthM / (res * 16/9);
+  const minDist = pixelPitch / (2 * Math.tan(1/120 * Math.PI/180));
+  const recMin = sizeM * 1.5;
+  const recMax = sizeM * 4.0;
+  r.innerHTML = `<div class="result-label">Viewing Distance</div>
+    <div class="result-value">${fmt(recMin,1)}m — ${fmt(recMax,1)}m</div>
+    <div class="result-sub">Retinal limit (${res}p): ${fmt(minDist,1)}m | Screen: ${fmt(sizeM,2)}m diagonal</div>`;
+}
+
+// PROJECTOR THROW
+function calcThrow() {
+  const w = parseFloat(document.getElementById('pt-width').value);
+  const tr = parseFloat(document.getElementById('pt-ratio').value);
+  const r = document.getElementById('pt-result');
+  if (isNaN(w)||isNaN(tr)) { r.innerHTML='<div class="result-label">Throw Distance</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const dist = w * tr;
+  r.innerHTML = `<div class="result-label">Throw Distance</div>
+    <div class="result-value orange">${fmt(dist,2)} m</div>
+    <div class="result-sub">${fmt(w,2)}m screen × ${tr} throw ratio</div>`;
+}
+
+function calcThrowRev() {
+  const d = parseFloat(document.getElementById('ptr-dist').value);
+  const w = parseFloat(document.getElementById('ptr-width').value);
+  const r = document.getElementById('ptr-result');
+  if (isNaN(d)||isNaN(w)) { r.innerHTML='<div class="result-label">Required Throw Ratio</div><div style="color:var(--text-dim);font-size:12px;">Enter values above</div>'; return; }
+  const tr = d / w;
+  r.innerHTML = `<div class="result-label">Required Throw Ratio</div>
+    <div class="result-value orange">${fmt(tr,2)}:1</div>
+    <div class="result-sub">${fmt(d,2)}m distance ÷ ${fmt(w,2)}m screen width</div>`;
+}
+
+// SCREEN SIZE
+function calcScreenSize() {
+  const far = parseFloat(document.getElementById('ss-far').value);
+  const use = document.getElementById('ss-use').value;
+  const r = document.getElementById('ss-result');
+  if (isNaN(far)) { r.innerHTML='<div class="result-label">Recommended Screen Diagonal</div><div style="color:var(--text-dim);font-size:12px;">Enter room depth above</div>'; return; }
+  const ratios = { boardroom: 6.0, lecture: 5.0, cinema: 4.0 };
+  const ratio = ratios[use];
+  const widthM = far / ratio;
+  const diagIn = Math.sqrt(widthM*widthM + (widthM*9/16)*(widthM*9/16)) / 0.0254;
+  r.innerHTML = `<div class="result-label">Recommended Screen</div>
+    <div class="result-value green">${fmt(diagIn,0)}" diagonal</div>
+    <div class="result-sub">${fmt(widthM,2)}m wide | Based on ${far}m viewing depth</div>`;
+}
+
+// BTU
+function calcBTU() {
+  const W = parseFloat(document.getElementById('btu-w').value);
+  const eff = parseFloat(document.getElementById('btu-eff').value);
+  const r = document.getElementById('btu-result');
+  if (isNaN(W)) { r.innerHTML='<div class="result-label">Heat Dissipation</div><div style="color:var(--text-dim);font-size:12px;">Enter power draw above</div>'; return; }
+  const heat = W * eff;
+  const btu = heat * 3.41214;
+  const kW = heat / 1000;
+  r.innerHTML = `<div class="result-label">Heat Load</div>
+    <div class="result-value">${fmt(btu,0)} BTU/hr</div>
+    <div class="result-sub">${fmt(heat,0)} W heat | ${fmt(kW,2)} kW | Cooling: min ${fmt(btu/12000,2)} ton AC</div>`;
+}
+
+// RACK COOLING
+function calcRack() {
+  const num = parseFloat(document.getElementById('rack-num').value) || 1;
+  const rackW = parseFloat(document.getElementById('rack-w').value);
+  const area = parseFloat(document.getElementById('rack-area').value);
+  const factor = parseFloat(document.getElementById('rack-room').value);
+  const r = document.getElementById('rack-result');
+  if (isNaN(rackW)) { r.innerHTML='<div class="result-label">Cooling Requirement</div><div style="color:var(--text-dim);font-size:12px;">Enter rack details above</div>'; return; }
+  const totalW = num * rackW;
+  const heatW = totalW * 0.9 * factor;
+  const btu = heatW * 3.41214;
+  const tons = btu / 12000;
+  const kW_cooling = heatW / 1000;
+  r.innerHTML = `<div class="result-label">Required Cooling</div>
+    <div class="result-value orange">${fmt(btu,0)} BTU/hr</div>
+    <div class="result-sub">${fmt(tons,2)} refrigeration tons | ${fmt(kW_cooling,2)} kW cooling</div>
+    <div class="result-sub">Total rack load: ${fmt(totalW,0)} W across ${num} rack${num>1?'s':''}</div>`;
+}
+
+// WATT-BTU CONVERTER
+function convWattBTU(from) {
+  const r = document.getElementById('conv-result');
+  if (from === 'w') {
+    const W = parseFloat(document.getElementById('conv-w').value);
+    if (isNaN(W)) return;
+    const btu = W * 3.41214;
+    document.getElementById('conv-btu').value = fmt(btu, 2);
+    r.innerHTML = `<div class="result-label">Conversion</div><div class="result-value green">${fmt(W)} W = ${fmt(btu,1)} BTU/hr</div>`;
+  } else {
+    const btu = parseFloat(document.getElementById('conv-btu').value);
+    if (isNaN(btu)) return;
+    const W = btu / 3.41214;
+    document.getElementById('conv-w').value = fmt(W, 2);
+    r.innerHTML = `<div class="result-label">Conversion</div><div class="result-value green">${fmt(btu)} BTU/hr = ${fmt(W,1)} W</div>`;
+  }
+}
+
+// ===================== RACK BUILDER =====================
+const catColors = {
+  amp:     { bg:'#1f2d3d', border:'#00c8ff', text:'#00c8ff', label:'AMP' },
+  dsp:     { bg:'#1a2e28', border:'#00ff9d', text:'#00ff9d', label:'DSP' },
+  mixer:   { bg:'#2a1f3d', border:'#c87dff', text:'#c87dff', label:'MIX' },
+  video:   { bg:'#2e2510', border:'#ffcc00', text:'#ffcc00', label:'VID' },
+  network: { bg:'#102530', border:'#00e5ff', text:'#00e5ff', label:'NET' },
+  power:   { bg:'#2e1f10', border:'#ff6b2b', text:'#ff6b2b', label:'PWR' },
+  patch:   { bg:'#222e10', border:'#aacc44', text:'#aacc44', label:'PTH' },
+  blank:   { bg:'#262b35', border:'#3a4255', text:'#5a6a80', label:'   ' },
+  other:   { bg:'#25222e', border:'#8888aa', text:'#8888aa', label:'AUX' },
+};
+
+let rackSlots = [];
+let rackSize = 32;
+let eqQueue = [];
+let eqIdCounter = 0;
+let dragItem = null;
+
+function setRackSize() {
+  rackSize = parseInt(document.getElementById('rack-size-sel').value);
+  renderRack();
+}
+
+function renderRack() {
+  rackSize = parseInt(document.getElementById('rack-size-sel').value);
+  const name = document.getElementById('rack-name').value || 'Rack';
+  document.getElementById('rack-title-display').textContent = name;
+  const newSlots = new Array(rackSize).fill(null);
+  for (let i = 0; i < Math.min(rackSlots.length, rackSize); i++) {
+    if (rackSlots[i] && rackSlots[i] !== '__occupied__') newSlots[i] = rackSlots[i];
+  }
+  rackSlots = newSlots;
+  buildRackDOM();
+  updateSummary();
+}
+
+function buildRackDOM() {
+  const uH = parseInt(document.getElementById('rack-u-height').value);
+  const frame = document.getElementById('rack-frame');
+
+  // Reset occupied markers
+  for (let i = 0; i < rackSlots.length; i++) {
+    if (rackSlots[i] === '__occupied__') rackSlots[i] = null;
+  }
+  // Re-apply occupied markers from real items
+  for (let i = 0; i < rackSlots.length; i++) {
+    const item = rackSlots[i];
+    if (item && item !== '__occupied__') {
+      for (let j = 1; j < item.u; j++) {
+        if (i + j < rackSlots.length) rackSlots[i + j] = '__occupied__';
+      }
+    }
+  }
+
+  let html = `<div style="background:#141720;border:3px solid #4a5568;border-radius:4px;padding:8px 0;box-shadow:0 8px 32px rgba(0,0,0,0.5);user-select:none;">`;
+  html += `<div style="background:#2a3040;margin:0 8px 4px;height:10px;border-radius:2px;display:flex;align-items:center;justify-content:center;gap:6px;">
+    <div style="width:6px;height:6px;border-radius:50%;background:#00ff9d;box-shadow:0 0 6px #00ff9d;"></div>
+    <div style="width:6px;height:6px;border-radius:50%;background:#ffcc00;box-shadow:0 0 6px #ffcc00;"></div>
+    <div style="flex:1;"></div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#3a4255;margin-right:8px;letter-spacing:1px;">${rackSize}U RACK</div>
+  </div>`;
+
+  for (let u = 0; u < rackSize; u++) {
+    const item = rackSlots[u];
+    const slotNum = String(u + 1).padStart(2, '0');
+
+    if (item === '__occupied__') continue;
+
+    if (item) {
+      const c = catColors[item.cat] || catColors.other;
+      const h = item.u * uH - 2;
+      html += `<div class="rack-slot filled" data-slot="${u}" draggable="true"
+        ondragstart="onSlotDragStart(event,${u})"
+        ondragover="onDragOver(event)"
+        ondrop="onSlotDrop(event,${u})"
+        ondblclick="removeFromSlot(${u})"
+        title="Double-click to remove | Drag to move"
+        style="height:${h}px;margin:1px 8px;background:${c.bg};border:1px solid ${c.border};border-left:4px solid ${c.border};display:flex;align-items:center;padding:0 8px;cursor:grab;border-radius:1px;gap:8px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#3a4255;min-width:20px;">${slotNum}</div>
+        <div style="font-size:9px;color:${c.border};font-family:'Share Tech Mono',monospace;letter-spacing:1px;min-width:28px;">${c.label}</div>
+        <div style="flex:1;overflow:hidden;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:${item.u===1?13:15}px;font-weight:600;color:#eaf2ff;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+          ${item.u>1?`<div style="font-size:10px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">${item.watts?item.watts+'W':''} ${item.kg?'· '+item.kg+'kg':''}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#3a4255;">${item.u}U</div>
+          ${item.watts&&item.u===1?`<div style="font-size:9px;color:${c.border};font-family:'Share Tech Mono',monospace;">${item.watts}W</div>`:''}
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="rack-slot empty" data-slot="${u}"
+        ondragover="onDragOver(event)"
+        ondrop="onSlotDrop(event,${u})"
+        style="height:${uH-2}px;margin:1px 8px;background:rgba(255,255,255,0.01);border:1px dashed #2a3040;display:flex;align-items:center;padding:0 8px;border-radius:1px;gap:8px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:#2a3040;min-width:20px;">${slotNum}</div>
+        <div style="flex:1;border-top:1px dashed #2a3040;opacity:0.3;"></div>
+      </div>`;
+    }
+  }
+
+  html += `<div style="background:#2a3040;margin:4px 8px 0;height:12px;border-radius:2px;"></div></div>`;
+  frame.innerHTML = html;
+}
+
+function addEquipment() {
+  const name = document.getElementById('eq-name').value.trim();
+  if (!name) { alert('Please enter equipment name.'); return; }
+  const u = parseInt(document.getElementById('eq-u').value);
+  const cat = document.getElementById('eq-cat').value;
+  const watts = parseFloat(document.getElementById('eq-watts').value) || 0;
+  const kg = parseFloat(document.getElementById('eq-kg').value) || 0;
+  eqQueue.push({ id: eqIdCounter++, name, u, cat, watts, kg });
+  document.getElementById('eq-name').value = '';
+  document.getElementById('eq-watts').value = '';
+  document.getElementById('eq-kg').value = '';
+  renderQueue();
+}
+
+function quickAdd(name, cat, u, watts, kg) {
+  eqQueue.push({ id: eqIdCounter++, name, u, cat, watts, kg });
+  renderQueue();
+}
+
+function renderQueue() {
+  const wrap = document.getElementById('eq-queue-wrap');
+  const q = document.getElementById('eq-queue');
+  wrap.style.display = eqQueue.length === 0 ? 'none' : 'block';
+  q.innerHTML = eqQueue.map(item => {
+    const c = catColors[item.cat] || catColors.other;
+    return `<div draggable="true"
+      ondragstart="onQueueDragStart(event,${item.id})"
+      ondblclick="placeNextAvailable(${item.id})"
+      title="Drag to rack or double-click to auto-place"
+      style="background:${c.bg};border:1px solid ${c.border};border-left:3px solid ${c.border};padding:5px 10px;border-radius:1px;cursor:grab;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;color:#eaf2ff;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;">
+      <span style="color:${c.border};font-size:10px;margin-right:4px;">${item.u}U</span>${item.name}
+    </div>`;
+  }).join('');
+}
+
+function placeNextAvailable(id) {
+  const idx = eqQueue.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const item = eqQueue[idx];
+  for (let u = 0; u <= rackSize - item.u; u++) {
+    let fits = true;
+    for (let j = 0; j < item.u; j++) {
+      if (rackSlots[u + j] !== null && rackSlots[u + j] !== undefined) { fits = false; break; }
+    }
+    if (fits) {
+      rackSlots[u] = item;
+      for (let j = 1; j < item.u; j++) rackSlots[u + j] = '__occupied__';
+      eqQueue.splice(idx, 1);
+      renderQueue();
+      buildRackDOM();
+      updateSummary();
+      return;
+    }
+  }
+  alert('No space for ' + item.u + 'U item.');
+}
+
+function removeFromSlot(u) {
+  const item = rackSlots[u];
+  if (!item || item === '__occupied__') return;
+  for (let j = 0; j < item.u; j++) rackSlots[u + j] = null;
+  eqQueue.unshift(item);
+  renderQueue();
+  buildRackDOM();
+  updateSummary();
+}
+
+function onQueueDragStart(e, id) { dragItem = { type: 'queue', id }; e.dataTransfer.effectAllowed = 'move'; }
+function onSlotDragStart(e, slotIdx) { dragItem = { type: 'slot', slotIdx }; e.dataTransfer.effectAllowed = 'move'; }
+function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+
+function onSlotDrop(e, targetSlot) {
+  e.preventDefault();
+  if (!dragItem) return;
+  let item;
+  let fromIdx = -1;
+  if (dragItem.type === 'queue') {
+    fromIdx = eqQueue.findIndex(i => i.id === dragItem.id);
+    if (fromIdx < 0) return;
+    item = eqQueue[fromIdx];
+  } else {
+    item = rackSlots[dragItem.slotIdx];
+    if (!item || item === '__occupied__') return;
+  }
+  // Check space
+  if (targetSlot + item.u > rackSize) { dragItem = null; return; }
+  for (let j = 0; j < item.u; j++) {
+    const s = rackSlots[targetSlot + j];
+    if (s && s !== '__occupied__' && s !== item) { dragItem = null; return; }
+    if (s === '__occupied__') {
+      // Check if occupied by item being moved
+      if (dragItem.type !== 'slot') { dragItem = null; return; }
+    }
+  }
+  if (dragItem.type === 'queue') {
+    eqQueue.splice(fromIdx, 1);
+    renderQueue();
+  } else {
+    for (let j = 0; j < item.u; j++) rackSlots[dragItem.slotIdx + j] = null;
+  }
+  rackSlots[targetSlot] = item;
+  for (let j = 1; j < item.u; j++) rackSlots[targetSlot + j] = '__occupied__';
+  dragItem = null;
+  buildRackDOM();
+  updateSummary();
+}
+
+function clearRack() {
+  const placed = rackSlots.filter(s => s && s !== '__occupied__');
+  eqQueue = [...placed, ...eqQueue];
+  rackSlots = new Array(rackSize).fill(null);
+  renderQueue();
+  buildRackDOM();
+  updateSummary();
+}
+
+function updateSummary() {
+  const placed = rackSlots.filter(s => s && s !== '__occupied__');
+  const usedU = placed.reduce((s, i) => s + i.u, 0);
+  const freeU = rackSize - usedU;
+  const totalW = placed.reduce((s, i) => s + (i.watts || 0), 0);
+  const totalKg = placed.reduce((s, i) => s + (i.kg || 0), 0);
+  const btu = Math.round(totalW * 3.412);
+  let tag = '';
+  if (placed.length > 0) {
+    if (freeU === 0) tag = '<span class="danger-tag">RACK FULL</span>';
+    else if (freeU <= 2) tag = '<span class="warn-tag">NEARLY FULL</span>';
+    else tag = '<span class="ok-tag">SPACE AVAILABLE</span>';
+  }
+  document.getElementById('summary-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div><div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace;">USED</div><div style="font-size:20px;color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;">${usedU}U</div></div>
+      <div><div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace;">FREE</div><div style="font-size:20px;color:var(--accent3);font-family:'Rajdhani',sans-serif;font-weight:700;">${freeU}U</div></div>
+      <div><div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace;">POWER</div><div style="font-size:20px;color:var(--accent2);font-family:'Rajdhani',sans-serif;font-weight:700;">${totalW}W</div></div>
+      <div><div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;font-family:'Share Tech Mono',monospace;">WEIGHT</div><div style="font-size:20px;color:var(--warn);font-family:'Rajdhani',sans-serif;font-weight:700;">${totalKg}kg</div></div>
+    </div>
+    <div style="font-size:10px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-bottom:6px;">Heat: ${btu} BTU/hr · Items: ${placed.length}</div>
+    ${tag}`;
+}
+
+function exportRack() {
+  const name = document.getElementById('rack-name').value || 'rack';
+  const frame = document.getElementById('rack-frame');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>${name}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>body{margin:30px;background:#1e2128;}</style></head>
+    <body><div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#eaf2ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">${name}</div>
+    ${frame.innerHTML}</body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+window.addEventListener('load', () => setTimeout(renderRack, 150));
+</script>
+</body>
+</html>
 
